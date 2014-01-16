@@ -434,7 +434,8 @@ public class FindVariableDeclarationVisitor implements Visitor {
 
 	@Override
 	public void run(Declaration node) {
-		// Mudar para InitDeclaratorI
+		// Change to InitDeclaratorI
+		// Include parameters declarations
 		if ((node.getChildren().size() > 1)
 				&& (node.getChildren().get(1).getChildren().size() > 0)
 				&& (node.getChildren().get(1).getChildren().get(0).getChildren().size() > 0)

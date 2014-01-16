@@ -442,7 +442,7 @@ public class FindGlobalVariableUsesVisitor implements Visitor {
 
 	@Override
 	public void run(Id node) {
-		
+
 		if ((!((node.getParent().getChildren().size() > 1) && (node.getParent().getChildren().get(1) instanceof FunctionCall))) && // not a function call
 			(!(node.getParent() instanceof AtomicNamedDeclarator)) && // not a variable declaration
 			(!(node.getParent().getParent() instanceof ParameterDeclarationD)) && // not a function parameter
