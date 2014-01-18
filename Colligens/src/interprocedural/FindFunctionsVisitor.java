@@ -84,9 +84,14 @@ import tree.visitor.Visitor;
 public class FindFunctionsVisitor implements Visitor {
 
 	private List<FunctionDef> functions = new ArrayList<FunctionDef>();
+	private int totalFunctions = 0;
 
 	public List<FunctionDef> getFunctions() {
 		return functions;
+	}
+	
+	public int getTotalFunctions() {
+		return totalFunctions;
 	}
 
 	@Override
@@ -202,6 +207,7 @@ public class FindFunctionsVisitor implements Visitor {
 
 	@Override
 	public void run(FunctionDef node) {
+		this.totalFunctions++;
 		if ((node.getChildren().size() > 1)
 				&& (node.getChildren().get(1).getChildren().size() > 1)
 				&& ((node.getChildren().get(1).getChildren().get(1) instanceof DeclParameterDeclList) || ((node

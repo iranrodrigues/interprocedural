@@ -22,33 +22,33 @@
  * MA 02111-1307, USA.
  */
 
-#include "config.h"
+//#include "config.h"
 
-#include <ctype.h>
-#include <errno.h>
-#include <stdio.h>
+//#include <ctype.h>
+//#include <errno.h>
+//#include <stdio.h>
 
-#include "libssh/priv.h"
-#include "libssh/session.h"
-#include "libssh/buffer.h"
-#include "libssh/misc.h"
-#include "libssh/keys.h"
+//#include "libssh/priv.h"
+//#include "libssh/session.h"
+//#include "libssh/buffer.h"
+//#include "libssh/misc.h"
+//#include "libssh/keys.h"
 
 /*todo: remove this include */
-#include "libssh/string.h"
+//#include "libssh/string.h"
 
 #ifdef HAVE_LIBGCRYPT
-#include <gcrypt.h>
+//#include <gcrypt.h>
 #elif defined HAVE_LIBCRYPTO
-#include <openssl/pem.h>
-#include <openssl/dsa.h>
-#include <openssl/err.h>
-#include <openssl/rsa.h>
+//#include <openssl/pem.h>
+//#include <openssl/dsa.h>
+//#include <openssl/err.h>
+//#include <openssl/rsa.h>
 #endif /* HAVE_LIBCRYPTO */
 
 #ifndef _WIN32
-# include <netinet/in.h>
-# include <arpa/inet.h>
+//# include <netinet/in.h>
+//# include <arpa/inet.h>
 #endif
 
 /**

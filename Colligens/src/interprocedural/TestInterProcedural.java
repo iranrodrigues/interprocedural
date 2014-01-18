@@ -14,7 +14,6 @@ import tree.FunctionDef;
 import tree.Id;
 import tree.TranslationUnit;
 import tree.visitor.VisitorASTOrganizer;
-import tree.visitor.VisitorPrinterNames;
 import core.ASTGenerator;
 import core.RefactoringType;
 import de.fosd.typechef.FrontendOptions;
@@ -29,19 +28,64 @@ import de.fosd.typechef.parser.c.CTypeContext;
 import de.fosd.typechef.parser.c.ParserMain;
 
 public class TestInterProcedural {
+	
+	private int totalFunctions = 0;
+	private int totalDependencies = 0;
+	private List<FunctionDef> functionsWithDependencies = new ArrayList<FunctionDef>();
+	
+	public int getTotalFunctions() {
+		return totalFunctions;
+	}
+
+	public int getTotalDependencies() {
+		return totalDependencies;
+	}
+
+	public List<FunctionDef> getFunctionsWithDependencies() {
+		return functionsWithDependencies;
+	}
 
 	public static void main(String[] args) {
-		String textSelection = "int x;\n" + 
-				"int y = x + 10;\n" + 
+		String textSelection = "int a=1;\n" + 
+				"#ifdef DIRETIVA3\n" + 
+				"int x = a + 5;\n" + 
+				"#endif\n" + 
 				"\n" + 
-				"void foo(int a) {\n" + 
-				"	a = 10;\n" + 
+				"int funcao_01(int c)\n" + 
+				"{ \n" + 
+				"#ifdef DIRETIVA1 \n" + 
+				"return c*4; \n" + 
+				"#endif \n" + 
+				"} \n" + 
+				"\n" + 
+				"void funcao_02()\n" + 
+				"{ \n" + 
+				"int a = 0;\n" + 
+				"#ifdef DIRETIVA4\n" + 
+				"x = funcao_01(a); \n" + 
+				"#endif \n" + 
 				"}\n" + 
 				"\n" + 
-				"void bar() {\n" + 
-				"#ifdef A\n" + 
-				"	foo(1);\n" + 
+				"#ifndef DIRETIVA2\n" + 
+				"int funcao_03()\n" + 
+				"{\n" + 
+				"#ifndef DIRETIVA1\n" + 
+				"return a + 10;\n" + 
+				"#else\n" + 
+				"return 10;\n" + 
 				"#endif\n" + 
+				"}\n" + 
+				"\n" + 
+				"void funcao_04(int t)\n" + 
+				"{\n" + 
+				"int x = 1;\n" + 
+				"	int z = t * (a + x) / 10;\n" + 
+				"}\n" + 
+				"#endif\n" + 
+				"\n" + 
+				"int main()\n" + 
+				"{ \n" + 
+				"int b; \n" + 
 				"}";
 
 		String stubs = "";
@@ -121,10 +165,6 @@ public class TestInterProcedural {
 		myAst.accept(new VisitorASTOrganizer());
 		
 		//myAst.accept(new VisitorPrinterNames());
-		
-		//myAst.accept(new TesteVisitor());
-
-		//myAst.accept(new VisitorASTOrganizer());
 
 		FindGlobalVariablesDeclarationsVisitor findGlobalVariablesDeclarationsVisitor = new FindGlobalVariablesDeclarationsVisitor();
 		
@@ -141,7 +181,7 @@ public class TestInterProcedural {
 			List<Id> globalVariableUses = findGlobalVariableUsesVisitor.getGlobalVariableUses();
 			
 			for (Id globalVariableUse : globalVariableUses) {
-				System.out.println(globalVariableUse.getName());
+				
 				FindVariableFunctionVisitor findVariableFunctionVisitor = new FindVariableFunctionVisitor();
 				globalVariableUse.accept(findVariableFunctionVisitor);
 				
@@ -153,6 +193,19 @@ public class TestInterProcedural {
 				
 				if (!(findVariableDeclarationVisitor.isFound())) {
 					System.out.println("Feature " + globalVariableDeclaration.getPresenceCondition().and(globalVariableUse.getPresenceCondition()).toTextExpr() + " in function (" + ((Id) variableFunction.getChildren().get(1).getChildren().get(0)).getName() +  ") uses global " + globalVariableDeclaration.getName() + " at " + globalVariableUse.getPositionFrom() + ".\n");
+					if (!(this.functionsWithDependencies.contains(variableFunction))) {
+						this.functionsWithDependencies.add(variableFunction);
+					}
+					this.totalDependencies++;
+				} else {
+					if ((!(findVariableDeclarationVisitor.getPresenceCondition().equivalentTo(globalVariableUse.getPresenceCondition())))
+					&& (!(globalVariableDeclaration.getPresenceCondition().and(globalVariableUse.getPresenceCondition()).andNot(findVariableDeclarationVisitor.getPresenceCondition())).isContradiction())) {
+						System.out.println("Feature " + globalVariableDeclaration.getPresenceCondition().and(globalVariableUse.getPresenceCondition()).andNot(findVariableDeclarationVisitor.getPresenceCondition()).toTextExpr() + " in function (" + ((Id) variableFunction.getChildren().get(1).getChildren().get(0)).getName() +  ") uses global " + globalVariableDeclaration.getName() + " at " + globalVariableUse.getPositionFrom() + ".\n");
+						if (!(this.functionsWithDependencies.contains(variableFunction))) {
+							this.functionsWithDependencies.add(variableFunction);
+						}
+						this.totalDependencies++;
+					}
 				}
 			}
 		}
@@ -163,6 +216,7 @@ public class TestInterProcedural {
 		myAst.accept(findFunctionsVisitor);
 		
 		List<FunctionDef> functions = findFunctionsVisitor.getFunctions();
+		this.totalFunctions = findFunctionsVisitor.getTotalFunctions();
 		
 		for (FunctionDef function : functions) {
 			
@@ -187,15 +241,33 @@ public class TestInterProcedural {
 					FindVariableDeclarationVisitor findVariableDeclarationVisitor = new FindVariableDeclarationVisitor(functionParameterUse, scope);
 					function.accept(findVariableDeclarationVisitor);
 					
-					if (!(findVariableDeclarationVisitor.isFound())) {
+					if ((!(findVariableDeclarationVisitor.isFound())) || (findVariableDeclarationVisitor.isParameter())) {
 						for (FunctionCall functionCall : functionCalls) {
 							
 							if ((!(functionCall.getPresenceCondition().equivalentTo(functionParameterUse.getPresenceCondition())) && // non equivalent presence condition
 								(!(functionCall.getPresenceCondition().and(functionParameterUse.getPresenceCondition()).isContradiction())))) { // presence condition in function call *and* parameter use cannot be a contradiction
 								System.out.println("Feature " + functionCall.getPresenceCondition().and(functionParameterUse.getPresenceCondition()).toTextExpr() + " in function (" + ((Id) function.getChildren().get(1).getChildren().get(0)).getName() +  ") uses " + functionParameterUse.getName() + " at " + functionParameterUse.getPositionFrom() + ".\n");
+								if (!(this.functionsWithDependencies.contains(function))) {
+									this.functionsWithDependencies.add(function);
+								}
+								this.totalDependencies++;
 							}
 						}
-						//System.out.println("Feature " + globalVariableDeclaration.getPresenceCondition().and(globalVariableUse.getPresenceCondition()).toTextExpr() + " in function (" + ((Id) variableFunction.getChildren().get(1).getChildren().get(0)).getName() +  ") uses " + globalVariableDeclaration.getName() + " at " + globalVariableUse.getPositionFrom() + ".\n");
+					} else {
+						if (!(findVariableDeclarationVisitor.getPresenceCondition().equivalentTo(functionParameterUse.getPresenceCondition()))) {
+							for (FunctionCall functionCall : functionCalls) {
+								
+								if ((!(functionCall.getPresenceCondition().equivalentTo(functionParameterUse.getPresenceCondition())) && // non equivalent presence condition
+									(!(functionCall.getPresenceCondition().and(functionParameterUse.getPresenceCondition()).andNot(findVariableDeclarationVisitor.getPresenceCondition()).isContradiction())))) { // presence condition in function call *and* parameter use cannot be a contradiction
+									System.out.println("Feature " + functionCall.getPresenceCondition().and(functionParameterUse.getPresenceCondition()).andNot(findVariableDeclarationVisitor.getPresenceCondition()).toTextExpr() + " in function (" + ((Id) function.getChildren().get(1).getChildren().get(0)).getName() +  ") uses " + functionParameterUse.getName() + " at " + functionParameterUse.getPositionFrom() + ".\n");
+									if (!(this.functionsWithDependencies.contains(function))) {
+										this.functionsWithDependencies.add(function);
+									}
+									this.totalDependencies++;
+								}
+							}
+						}
+					
 					}
 				}
 			}
