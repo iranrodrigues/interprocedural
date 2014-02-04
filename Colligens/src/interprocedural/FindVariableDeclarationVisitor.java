@@ -80,23 +80,20 @@ import tree.VolatileSpecifier;
 import tree.WhileStatement;
 import tree.visitor.Visitor;
 import de.fosd.typechef.featureexpr.FeatureExpr;
+import de.fosd.typechef.featureexpr.FeatureExprFactory;
 
 public class FindVariableDeclarationVisitor implements Visitor {
 
 	private boolean found = false;
-	private boolean parameter = false;
 	private Id variable;
 	private List<CompoundStatement> scope;
-	private FeatureExpr presenceCondition;
+	private boolean denyParameterDeclarations = false;
+	private FeatureExpr presenceCondition = FeatureExprFactory.True();
 
 	public boolean isFound() {
 		return found;
 	}
 	
-	public boolean isParameter() {
-		return parameter;
-	}
-
 	public Id getVariable() {
 		return variable;
 	}
@@ -110,9 +107,10 @@ public class FindVariableDeclarationVisitor implements Visitor {
 	}
 
 	public FindVariableDeclarationVisitor(Id variable,
-			List<CompoundStatement> scope) {
+			List<CompoundStatement> scope, boolean ignoreParameterDeclarations) {
 		this.variable = variable;
 		this.scope = scope;
+		this.denyParameterDeclarations = ignoreParameterDeclarations;
 	}
 
 	@Override
@@ -190,8 +188,11 @@ public class FindVariableDeclarationVisitor implements Visitor {
 				&& (node.getPositionFrom().$less(this.getVariable().getPositionFrom()))
 				&& (!(node.getPresenceCondition().and(this.getVariable().getPresenceCondition()).isContradiction()))) {
 			this.found = true;
-			this.parameter = true;
-			this.presenceCondition = node.getChildren().get(1).getChildren().get(0).getPresenceCondition();
+			if (denyParameterDeclarations) {
+				this.presenceCondition = this.presenceCondition.andNot(node.getChildren().get(1).getChildren().get(0).getPresenceCondition());
+			} else {
+				this.presenceCondition = this.presenceCondition.and(node.getChildren().get(1).getChildren().get(0).getPresenceCondition());
+			}
 		}
 		
 		for (int i = 0; i < node.getChildren().size(); i++) {
@@ -265,7 +266,6 @@ public class FindVariableDeclarationVisitor implements Visitor {
 
 	@Override
 	public void run(InitDeclaratorI node) {
-		
 		if ((node.getChildren().size() > 0)
 				&& (node.getChildren().get(0).getChildren().size() > 0)
 				&& (node.getChildren().get(0).getChildren().get(0) instanceof Id)
@@ -273,8 +273,7 @@ public class FindVariableDeclarationVisitor implements Visitor {
 				&& (node.getPositionFrom().$less(this.getVariable().getPositionFrom()))
 				&& (!(node.getPresenceCondition().and(this.getVariable().getPresenceCondition()).isContradiction()))) {
 			this.found = true;
-			this.parameter = false;
-			this.presenceCondition = node.getChildren().get(0).getChildren().get(0).getPresenceCondition();
+			this.presenceCondition = this.presenceCondition.andNot(node.getChildren().get(0).getChildren().get(0).getPresenceCondition());
 		}
 		for (int i = 0; i < node.getChildren().size(); i++) {
 			node.getChildren().get(i).accept(this);

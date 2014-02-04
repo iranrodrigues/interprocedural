@@ -229,10 +229,14 @@ public class FindGlobalVariablesDeclarationsVisitor implements Visitor {
 		if (node.getParent().getParent().getParent() instanceof TranslationUnit) {
 			if (!(node.getParent().getChildren().get(0) instanceof TypedefSpecifier)) {
 				if (node.getChildren().size() > 0 && node.getChildren().get(0) instanceof AtomicNamedDeclarator) {
-					AtomicNamedDeclarator atomicNameDeclarator = (AtomicNamedDeclarator) node.getChildren().get(0);
-					if (atomicNameDeclarator.getChildren().size() > 0 && atomicNameDeclarator.getChildren().get(0) instanceof Id) {
-						Id id = (Id) atomicNameDeclarator.getChildren().get(0);	
-						this.globalVariablesDeclarations.add(id);
+					AtomicNamedDeclarator atomicNamedDeclarator = (AtomicNamedDeclarator) node.getChildren().get(0);
+					
+					// Search for first Id under AtomicNamedDeclarator
+					for (int i = 0; i < atomicNamedDeclarator.getChildren().size(); i++) {
+						if (atomicNamedDeclarator.getChildren().get(i) instanceof Id) {
+							Id id = (Id) atomicNamedDeclarator.getChildren().get(i);	
+							this.globalVariablesDeclarations.add(id);
+						}				
 					}
 						
 				}

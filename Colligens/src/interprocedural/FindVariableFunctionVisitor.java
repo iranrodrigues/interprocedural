@@ -83,11 +83,11 @@ import tree.visitor.Visitor;
 
 public class FindVariableFunctionVisitor implements Visitor {
 	
-	private FunctionDef function;
+	private FunctionDef functionDef;
 	private List<CompoundStatement> scope = new ArrayList<CompoundStatement>();
 
-	public FunctionDef getFunction() {
-		return function;
+	public FunctionDef getFunctionDef() {
+		return functionDef;
 	}
 
 	public List<CompoundStatement> getScope() {
@@ -180,7 +180,7 @@ public class FindVariableFunctionVisitor implements Visitor {
 
 	@Override
 	public void run(FunctionDef node) {
-		this.function = node;
+		this.functionDef = node;
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 package interprocedural;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import tree.ArrayAccess;
 import tree.AssignExpr;
@@ -83,9 +83,9 @@ import tree.visitor.Visitor;
 
 public class FindFunctionParametersVisitor implements Visitor {
 
-	private List<Id> functionParameters = new ArrayList<Id>();
+	private Set<Id> functionParameters = new HashSet<Id>();
 
-	public List<Id> getFunctionParameters() {
+	public Set<Id> getFunctionParameters() {
 		return functionParameters;
 	}
 
@@ -98,10 +98,6 @@ public class FindFunctionParametersVisitor implements Visitor {
 
 	@Override
 	public void run(AtomicNamedDeclarator node) {
-		if ((node.getParent().getParent() instanceof DeclParameterDeclList)
-				&& (node.getChildren().get(0) instanceof Id)) {
-			this.functionParameters.add((Id) node.getChildren().get(0));
-		}
 		for (int i = 0; i < node.getChildren().size(); i++) {
 			node.getChildren().get(i).accept(this);
 		}
@@ -158,6 +154,15 @@ public class FindFunctionParametersVisitor implements Visitor {
 
 	@Override
 	public void run(ParameterDeclarationD node) {
+		if ((node.getChildren().size() > 1) && (node.getChildren().get(1).getChildren().size() > 0)) {
+			// Search for first Id under AtomicNamedDeclarator
+			for (int i = 0; i < node.getChildren().get(1).getChildren().size(); i++) {
+				if (node.getChildren().get(1).getChildren().get(i) instanceof Id) {
+					this.functionParameters.add((Id) node.getChildren().get(1).getChildren().get(i));
+				}				
+			}
+		}
+			
 		for (int i = 0; i < node.getChildren().size(); i++) {
 			node.getChildren().get(i).accept(this);
 		}

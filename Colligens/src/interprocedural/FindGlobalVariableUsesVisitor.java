@@ -447,6 +447,7 @@ public class FindGlobalVariableUsesVisitor implements Visitor {
 			(!(node.getParent() instanceof AtomicNamedDeclarator)) && // not a variable declaration
 			(!(node.getParent().getParent() instanceof ParameterDeclarationD)) && // not a function parameter
 			(!(node.getParent().getParent() instanceof FunctionDef)) && // not a function definition
+			(!(node.getParent() instanceof PointerPostfixSuffix)) && // not a struct member
 			(getVariable().getName().equals(node.getName())) && // same name as global variable
 			(!(node.getPresenceCondition().equivalentTo(this.getVariable().getPresenceCondition())) && // non equivalent presence condition
 			(!(node.getPresenceCondition().and(this.getVariable().getPresenceCondition()).isContradiction())))) { // presence condition in declaration *and* use cannot be a contradiction

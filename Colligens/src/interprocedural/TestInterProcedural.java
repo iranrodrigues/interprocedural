@@ -1,12 +1,14 @@
 package interprocedural;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import tree.CompoundStatement;
 import tree.FunctionCall;
@@ -15,7 +17,6 @@ import tree.Id;
 import tree.TranslationUnit;
 import tree.visitor.VisitorASTOrganizer;
 import core.ASTGenerator;
-import core.RefactoringType;
 import de.fosd.typechef.FrontendOptions;
 import de.fosd.typechef.FrontendOptionsWithConfigFiles;
 import de.fosd.typechef.Lex;
@@ -29,140 +30,82 @@ import de.fosd.typechef.parser.c.ParserMain;
 
 public class TestInterProcedural {
 	
-	private int totalFunctions = 0;
-	private int totalDependencies = 0;
-	private List<FunctionDef> functionsWithDependencies = new ArrayList<FunctionDef>();
+	private List<Dependency> dependencies = new ArrayList<Dependency>();
+	private Map<FunctionDef, Function> functions = new HashMap<FunctionDef, Function>();
+	private Map<String, FunctionMetrics> functionMetricsMap = new HashMap<String, FunctionMetrics>();
+	private String filePath;
+	private String stubsPath;
+
+	public TestInterProcedural(String filePath, String stubsPath) {
+		this.filePath = filePath;
+		this.stubsPath = stubsPath;
+	}
 	
-	public int getTotalFunctions() {
-		return totalFunctions;
-	}
-
-	public int getTotalDependencies() {
-		return totalDependencies;
-	}
-
-	public List<FunctionDef> getFunctionsWithDependencies() {
-		return functionsWithDependencies;
-	}
-
-	public static void main(String[] args) {
-		String textSelection = "int a=1;\n" + 
-				"#ifdef DIRETIVA3\n" + 
-				"int x = a + 5;\n" + 
-				"#endif\n" + 
-				"\n" + 
-				"int funcao_01(int c)\n" + 
-				"{ \n" + 
-				"#ifdef DIRETIVA1 \n" + 
-				"return c*4; \n" + 
-				"#endif \n" + 
-				"} \n" + 
-				"\n" + 
-				"void funcao_02()\n" + 
-				"{ \n" + 
-				"int a = 0;\n" + 
-				"#ifdef DIRETIVA4\n" + 
-				"x = funcao_01(a); \n" + 
-				"#endif \n" + 
-				"}\n" + 
-				"\n" + 
-				"#ifndef DIRETIVA2\n" + 
-				"int funcao_03()\n" + 
-				"{\n" + 
-				"#ifndef DIRETIVA1\n" + 
-				"return a + 10;\n" + 
-				"#else\n" + 
-				"return 10;\n" + 
-				"#endif\n" + 
-				"}\n" + 
-				"\n" + 
-				"void funcao_04(int t)\n" + 
-				"{\n" + 
-				"int x = 1;\n" + 
-				"	int z = t * (a + x) / 10;\n" + 
-				"}\n" + 
-				"#endif\n" + 
-				"\n" + 
-				"int main()\n" + 
-				"{ \n" + 
-				"int b; \n" + 
-				"}";
-
-		String stubs = "";
-
-		// Writing stubs to stubs.h file
-		PrintWriter outStubs = null;
-		String stubsFilePath = System.getProperty("java.io.tmpdir")
-				+ System.getProperty("file.separator") + "stubs.h";
-
+	public TestInterProcedural(String filePath) {
+		this.filePath = filePath;
+		this.stubsPath = System.getProperty("java.io.tmpdir") + System.getProperty("file.separator") + "stubs.h";
+		
+		PrintWriter out = null;
 		try {
-			outStubs = new PrintWriter(stubsFilePath);
+			out = new PrintWriter(stubsPath);
+			out.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		outStubs.println(stubs);
-		outStubs.flush();
-		outStubs.close();
+	}
 
+	public List<Dependency> getDependencies() {
+		return dependencies;
+	}
+
+	public Map<String, FunctionMetrics> getFunctionMetricsMap() {
+		return functionMetricsMap;
+	}
+	
+	public String getFilePath() {
+		return filePath;
+	}
+	
+	public String getStubsPath() {
+		return stubsPath;
+	}
+
+	public static void main(String[] args) {
+		TestInterProcedural testInterProcedural = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test3.c");
 		try {
-			new TestInterProcedural().refactorCode(textSelection, stubsFilePath,
-					RefactoringType.REFACT_INCOMPLETESTMTS);
+			testInterProcedural.refactorCode();
+			System.out.println(testInterProcedural.testFunctions());
+			System.out.println(testInterProcedural.testDependencies());
 		} catch (OptionException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public static final String inputFilePath = System
-			.getProperty("java.io.tmpdir")
-			+ System.getProperty("file.separator") + "input.c";
-	public static final String outputFilePath = System
-			.getProperty("java.io.tmpdir")
-			+ System.getProperty("file.separator") + "output.c";
-
-	public String refactorCode(String textSelection, String stubsPath,
-			RefactoringType refactoringType) throws OptionException {
-
-		// ParserOptions myParserOptions = new MyParserOptions();
+	public String refactorCode() throws OptionException {
 
 		FrontendOptions myParserOptions = new FrontendOptionsWithConfigFiles();
-		ArrayList<String> paramters = new ArrayList<String>();
+		ArrayList<String> parameters = new ArrayList<String>();
 
-		paramters.add("--lexNoStdout");
-		paramters.add("-h");
-		paramters.add(stubsPath);
+		parameters.add("--lexNoStdout");
+		parameters.add("-h");
+		parameters.add(this.stubsPath);
+		parameters.add(this.filePath);
 
-		// Writing textSelection to input.c file
-		PrintWriter out = null;
-		try {
-			out = new PrintWriter(inputFilePath);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		out.println(textSelection);
-		out.flush();
-		out.close();
+		String[] parameterArray = parameters
+				.toArray(new String[parameters.size()]);
 
-		paramters.add(inputFilePath);
-
-		String[] paramterArray = paramters
-				.toArray(new String[paramters.size()]);
-
-		myParserOptions.parseOptions(paramterArray);
+		myParserOptions.parseOptions(parameterArray);
 
 		ParserMain parser = new ParserMain(new CParser(null, false));
 
 		TokenReader<CToken, CTypeContext> in = Lex.lex(myParserOptions);
 
-		// FASTER
 		AST ast = parser.parserMain(in, myParserOptions);
-		//System.out.println(ast);
-
 		tree.Node myAst = new TranslationUnit();
 		new ASTGenerator().generate(ast, myAst);
-
-		//myAst.accept(new VisitorPrinter(false));
 		
 		myAst.accept(new VisitorASTOrganizer());
+		//myAst.accept(new VisitorPrinter(false));
 		
 		//myAst.accept(new VisitorPrinterNames());
 
@@ -170,6 +113,20 @@ public class TestInterProcedural {
 		
 		myAst.accept(new PresenceConditionVisitor());
 		myAst.accept(findGlobalVariablesDeclarationsVisitor);
+		
+		FindFunctionsVisitor findFunctionsVisitor = new FindFunctionsVisitor();
+		myAst.accept(findFunctionsVisitor);
+		
+		Set<FunctionDef> functionDefs = findFunctionsVisitor.getFunctions();
+		for (FunctionDef functionDef : functionDefs) {
+			FindFunctionParametersVisitor findFunctionParametersVisitor = new FindFunctionParametersVisitor();
+			functionDef.accept(findFunctionParametersVisitor);
+			Set<Id> functionParameters = findFunctionParametersVisitor.getFunctionParameters();
+			Function function = new Function(functionDef, functionParameters);
+			functions.put(functionDef, function);
+			FunctionMetrics functionMetrics = new FunctionMetrics(function);
+			functionMetricsMap.put(function.getName(), functionMetrics);
+		}
 		
 		List<Id> globalVariablesDeclarations = findGlobalVariablesDeclarationsVisitor.getGlobalVariablesDeclarations();
 		
@@ -181,187 +138,143 @@ public class TestInterProcedural {
 			List<Id> globalVariableUses = findGlobalVariableUsesVisitor.getGlobalVariableUses();
 			
 			for (Id globalVariableUse : globalVariableUses) {
-				
+							
 				FindVariableFunctionVisitor findVariableFunctionVisitor = new FindVariableFunctionVisitor();
 				globalVariableUse.accept(findVariableFunctionVisitor);
 				
-				FunctionDef variableFunction = findVariableFunctionVisitor.getFunction();
+				FunctionDef functionDef = findVariableFunctionVisitor.getFunctionDef();
+				// If global variable use is outside a function, skip it
+				if (functionDef == null) {
+					continue;
+				}
+				
+				Function function = functions.get(functionDef);
 				
 				List<CompoundStatement> scope = findVariableFunctionVisitor.getScope();
-				FindVariableDeclarationVisitor findVariableDeclarationVisitor = new FindVariableDeclarationVisitor(globalVariableUse, scope);
-				variableFunction.accept(findVariableDeclarationVisitor);
+				FindVariableDeclarationVisitor findVariableDeclarationVisitor = new FindVariableDeclarationVisitor(globalVariableUse, scope, true);
+				functionDef.accept(findVariableDeclarationVisitor);
 				
 				if (!(findVariableDeclarationVisitor.isFound())) {
-					System.out.println("Feature " + globalVariableDeclaration.getPresenceCondition().and(globalVariableUse.getPresenceCondition()).toTextExpr() + " in function (" + ((Id) variableFunction.getChildren().get(1).getChildren().get(0)).getName() +  ") uses global " + globalVariableDeclaration.getName() + " at " + globalVariableUse.getPositionFrom() + ".\n");
-					if (!(this.functionsWithDependencies.contains(variableFunction))) {
-						this.functionsWithDependencies.add(variableFunction);
+					
+					Dependency dependency = new GlobalVariableDependency(function, globalVariableDeclaration.getPresenceCondition().and(globalVariableUse.getPresenceCondition()), globalVariableUse.getPresenceCondition(), globalVariableDeclaration.getPresenceCondition(), globalVariableUse, globalVariableDeclaration);
+					if ((dependency.getInnerFile().equals(this.stubsPath)) || (dependency.getOuterFile().equals(this.stubsPath))) {
+						continue;
 					}
-					this.totalDependencies++;
+					dependencies.add(dependency);
+					functionMetricsMap.get(dependency.getFunction().getName()).getDependencies().add(dependency);
 				} else {
+					// If there is a local variable with same name as the global, whose existence depends on a directive, there is a dependency
 					if ((!(findVariableDeclarationVisitor.getPresenceCondition().equivalentTo(globalVariableUse.getPresenceCondition())))
-					&& (!(globalVariableDeclaration.getPresenceCondition().and(globalVariableUse.getPresenceCondition()).andNot(findVariableDeclarationVisitor.getPresenceCondition())).isContradiction())) {
-						System.out.println("Feature " + globalVariableDeclaration.getPresenceCondition().and(globalVariableUse.getPresenceCondition()).andNot(findVariableDeclarationVisitor.getPresenceCondition()).toTextExpr() + " in function (" + ((Id) variableFunction.getChildren().get(1).getChildren().get(0)).getName() +  ") uses global " + globalVariableDeclaration.getName() + " at " + globalVariableUse.getPositionFrom() + ".\n");
-						if (!(this.functionsWithDependencies.contains(variableFunction))) {
-							this.functionsWithDependencies.add(variableFunction);
+					&& (!(globalVariableDeclaration.getPresenceCondition().and(globalVariableUse.getPresenceCondition()).and(findVariableDeclarationVisitor.getPresenceCondition())).isContradiction())) {
+						// Presence condition now depends on the non-declaration of the local variable 
+						Dependency dependency = new GlobalVariableDependency(function, globalVariableDeclaration.getPresenceCondition().and(globalVariableUse.getPresenceCondition()).and(findVariableDeclarationVisitor.getPresenceCondition()), globalVariableUse.getPresenceCondition(), globalVariableDeclaration.getPresenceCondition(), globalVariableUse, globalVariableDeclaration);
+						if ((dependency.getInnerFile().equals(this.stubsPath)) || (dependency.getOuterFile().equals(this.stubsPath))) {
+							continue;
 						}
-						this.totalDependencies++;
+						dependencies.add(dependency);
+						functionMetricsMap.get(dependency.getFunction().getName()).getDependencies().add(dependency);
 					}
 				}
 			}
 		}
 		
-		//myAst.accept(new FunctionVariableVisitor());
-		
-		FindFunctionsVisitor findFunctionsVisitor = new FindFunctionsVisitor();
-		myAst.accept(findFunctionsVisitor);
-		
-		List<FunctionDef> functions = findFunctionsVisitor.getFunctions();
-		this.totalFunctions = findFunctionsVisitor.getTotalFunctions();
-		
-		for (FunctionDef function : functions) {
+		for (Entry<FunctionDef, Function> functionMap : functions.entrySet()) {
 			
-			FindFunctionCallsVisitor findFunctionCallsVisitor = new FindFunctionCallsVisitor(function);
+			Function function = functionMap.getValue();
+			FunctionDef functionDef = function.getFunctionDef();
+			
+			FindFunctionCallsVisitor findFunctionCallsVisitor = new FindFunctionCallsVisitor(functionDef);
 			myAst.accept(findFunctionCallsVisitor);
 			List<FunctionCall> functionCalls = findFunctionCallsVisitor.getFunctionCalls();
 			
-			FindFunctionParametersVisitor findFunctionParametersVisitor = new FindFunctionParametersVisitor();
-			function.accept(findFunctionParametersVisitor);
-			List<Id> functionParameters = findFunctionParametersVisitor.getFunctionParameters();
+			function.setFunctionCalls(functionCalls);
 			
+			FindFunctionParametersVisitor findFunctionParametersVisitor = new FindFunctionParametersVisitor();
+			functionDef.accept(findFunctionParametersVisitor);
+			Set<Id> functionParameters = findFunctionParametersVisitor.getFunctionParameters();
+
 			for (Id functionParameter : functionParameters) {
 				
 				FindFunctionParameterUsesVisitor findFunctionParameterUsesVisitor = new FindFunctionParameterUsesVisitor(functionParameter);
-				function.accept(findFunctionParameterUsesVisitor);
+				functionDef.accept(findFunctionParameterUsesVisitor);
 				List<Id> functionParameterUses = findFunctionParameterUsesVisitor.getFunctionParameterUses();
 				
 				for (Id functionParameterUse : functionParameterUses) {
 					
 					List<CompoundStatement> scope = new ArrayList<CompoundStatement>();
-					scope.add((CompoundStatement) function.getChildren().get(2));
-					FindVariableDeclarationVisitor findVariableDeclarationVisitor = new FindVariableDeclarationVisitor(functionParameterUse, scope);
-					function.accept(findVariableDeclarationVisitor);
 					
-					if ((!(findVariableDeclarationVisitor.isFound())) || (findVariableDeclarationVisitor.isParameter())) {
+					for (int i = 0; i < functionDef.getChildren().size(); i++) {
+						if (functionDef.getChildren().get(i) instanceof CompoundStatement) {
+							scope.add((CompoundStatement) functionDef.getChildren().get(i));
+						}
+					}
+					
+					FindVariableDeclarationVisitor findVariableDeclarationVisitor = new FindVariableDeclarationVisitor(functionParameterUse, scope, false);
+					functionDef.accept(findVariableDeclarationVisitor);
+					
+					if (!(findVariableDeclarationVisitor.isFound())) {
 						for (FunctionCall functionCall : functionCalls) {
 							
 							if ((!(functionCall.getPresenceCondition().equivalentTo(functionParameterUse.getPresenceCondition())) && // non equivalent presence condition
 								(!(functionCall.getPresenceCondition().and(functionParameterUse.getPresenceCondition()).isContradiction())))) { // presence condition in function call *and* parameter use cannot be a contradiction
-								System.out.println("Feature " + functionCall.getPresenceCondition().and(functionParameterUse.getPresenceCondition()).toTextExpr() + " in function (" + ((Id) function.getChildren().get(1).getChildren().get(0)).getName() +  ") uses " + functionParameterUse.getName() + " at " + functionParameterUse.getPositionFrom() + ".\n");
-								if (!(this.functionsWithDependencies.contains(function))) {
-									this.functionsWithDependencies.add(function);
-								}
-								this.totalDependencies++;
-							}
-						}
-					} else {
-						if (!(findVariableDeclarationVisitor.getPresenceCondition().equivalentTo(functionParameterUse.getPresenceCondition()))) {
-							for (FunctionCall functionCall : functionCalls) {
 								
-								if ((!(functionCall.getPresenceCondition().equivalentTo(functionParameterUse.getPresenceCondition())) && // non equivalent presence condition
-									(!(functionCall.getPresenceCondition().and(functionParameterUse.getPresenceCondition()).andNot(findVariableDeclarationVisitor.getPresenceCondition()).isContradiction())))) { // presence condition in function call *and* parameter use cannot be a contradiction
-									System.out.println("Feature " + functionCall.getPresenceCondition().and(functionParameterUse.getPresenceCondition()).andNot(findVariableDeclarationVisitor.getPresenceCondition()).toTextExpr() + " in function (" + ((Id) function.getChildren().get(1).getChildren().get(0)).getName() +  ") uses " + functionParameterUse.getName() + " at " + functionParameterUse.getPositionFrom() + ".\n");
-									if (!(this.functionsWithDependencies.contains(function))) {
-										this.functionsWithDependencies.add(function);
-									}
-									this.totalDependencies++;
+								Dependency dependency = new FunctionCallDependency(function, functionCall.getPresenceCondition().and(functionParameterUse.getPresenceCondition()), functionParameterUse.getPresenceCondition(), functionCall.getPresenceCondition(), functionParameterUse, functionCall);
+								if ((dependency.getInnerFile().equals(this.stubsPath)) || (dependency.getOuterFile().equals(this.stubsPath))) {
+									continue;
 								}
+								dependencies.add(dependency);
+								functionMetricsMap.get(dependency.getFunction().getName()).getDependencies().add(dependency);
 							}
 						}
-					
-					}
-				}
-			}
-		}
-		
-		/*FindDirectivesVisitor findDirectivesVisitor = new FindDirectivesVisitor();
-		myAst.accept(findDirectivesVisitor);
-		
-		List<Opt> directives = findDirectivesVisitor.getPreprocessorDirectives();
-		
-		FindVariablesWithinDirectivesVisitor findVariablesWithinDirectivesVisitor;
-		
-		for (Opt directive : directives) {
-			System.out.println("Searching directive: " + directive.getConditional() + "...\n");
-			
-			findVariablesWithinDirectivesVisitor = new FindVariablesWithinDirectivesVisitor();
-			directive.accept(findVariablesWithinDirectivesVisitor);
-			
-			List<Id> variables = findVariablesWithinDirectivesVisitor.getVariables();
-			
-			for (Id variable : variables) {
-				System.out.println("Variable found: " + variable.getName());
-				
-				FindVariableScopeVisitor findVariableScopeVisitor = new FindVariableScopeVisitor();
-				variable.accept(findVariableScopeVisitor);
-				
-				Node scope = findVariableScopeVisitor.getScope();
-				if (scope instanceof FunctionDef) {
-					System.out.println("Variable used inside function: " + ((Id) scope.getChildren().get(1).getChildren().get(0)).getName());
-					
-					FindVariableDeclarationVisitor findVariableDeclarationVisitor = new FindVariableDeclarationVisitor(variable);
-					scope.accept(findVariableDeclarationVisitor);
-					
-					if (!(findVariableDeclarationVisitor.isFound())) {
-						System.out.println("Feature " + directive.getConditional().toTextExpr() + " in function (" + ((Id) scope.getChildren().get(1).getChildren().get(0)).getName() +  ") uses " + variable.getName() + ".\n");
 					} else {
-						System.out.println("Variable declaration found within function\n");
+						for (FunctionCall functionCall : functionCalls) {
+							if ((!(functionCall.getPresenceCondition().equivalentTo(functionParameterUse.getPresenceCondition())) && // non equivalent presence condition
+								(!(functionCall.getPresenceCondition().and(functionParameterUse.getPresenceCondition()).and(findVariableDeclarationVisitor.getPresenceCondition()).isContradiction())))) { // presence condition in function call *and* parameter use cannot be a contradiction
+								
+								Dependency dependency = new FunctionCallDependency(function, functionCall.getPresenceCondition().and(functionParameterUse.getPresenceCondition()).and(findVariableDeclarationVisitor.getPresenceCondition()), functionParameterUse.getPresenceCondition(), functionCall.getPresenceCondition(), functionParameterUse, functionCall);
+								if ((dependency.getInnerFile().equals(this.stubsPath)) || (dependency.getOuterFile().equals(this.stubsPath))) {
+									continue;
+								}
+								dependencies.add(dependency);
+								functionMetricsMap.get(dependency.getFunction().getName()).getDependencies().add(dependency);
+							}
+						}
 					}
-					
-				} else {
-					System.out.println("Variable used outside function\n");
 				}
 			}
-			
-		}*/
-
-		
-		// FIND PATTERNS
-		//myAst.accept(new PresenceConditionVisitor());
-		//myAst.accept(new FunctionVariableVisitor());
-		
-
-		/*try {
-			new CodeOrganizer().organize();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		try {
-			Runtime.getRuntime().exec(
-					"/opt/local/bin/uncrustify -o " + outputFilePath
-							+ " -c default.cfg -f " + outputFilePath);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		String outputFile = "";
-
-		try {
-			outputFile = this.readFile(outputFilePath);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return outputFile;*/
-		
+		}		
 		return "";
 	}
-
-	public String readFile(String fileName) throws IOException {
-		BufferedReader br = new BufferedReader(new FileReader(fileName));
-		try {
-			StringBuilder sb = new StringBuilder();
-			String line = br.readLine();
-
-			while (line != null) {
-				sb.append(line);
-				sb.append("\n");
-				line = br.readLine();
-			}
-			return sb.toString();
-		} finally {
-			br.close();
+	
+	public String testFunctions() {
+		StringBuilder sb = new StringBuilder();
+		for (Entry<String, FunctionMetrics> functionMetrics : functionMetricsMap.entrySet()) {
+			sb.append(functionMetrics.getValue().toString());
+			sb.append("\n");
 		}
+		return sb.toString().trim();
 	}
-
+	
+	public String testDependencies() {
+		StringBuilder sb = new StringBuilder();
+		for (Dependency dependency : dependencies) {
+			sb.append(dependency.toString());
+			sb.append("\n");
+		}
+		return sb.toString().trim();
+	}
+	
+	public String testUniqueDependencies() {
+		Set<String> uniqueDependencies = new HashSet<String>();
+		StringBuilder sb = new StringBuilder();
+		for (Dependency dependency : dependencies) {
+			if (!uniqueDependencies.contains(dependency.getUniqueName())) {
+				uniqueDependencies.add(dependency.getUniqueName());
+				sb.append(dependency.toString());
+				sb.append("\n");
+			}
+		}
+		return sb.toString().trim();
+	}
 	
 }

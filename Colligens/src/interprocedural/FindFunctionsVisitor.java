@@ -1,7 +1,7 @@
 package interprocedural;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import tree.ArrayAccess;
 import tree.AssignExpr;
@@ -83,15 +83,10 @@ import tree.visitor.Visitor;
 
 public class FindFunctionsVisitor implements Visitor {
 
-	private List<FunctionDef> functions = new ArrayList<FunctionDef>();
-	private int totalFunctions = 0;
+	private Set<FunctionDef> functions = new HashSet<FunctionDef>();
 
-	public List<FunctionDef> getFunctions() {
+	public Set<FunctionDef> getFunctions() {
 		return functions;
-	}
-	
-	public int getTotalFunctions() {
-		return totalFunctions;
 	}
 
 	@Override
@@ -207,15 +202,31 @@ public class FindFunctionsVisitor implements Visitor {
 
 	@Override
 	public void run(FunctionDef node) {
-		this.totalFunctions++;
-		if ((node.getChildren().size() > 1)
-				&& (node.getChildren().get(1).getChildren().size() > 1)
-				&& ((node.getChildren().get(1).getChildren().get(1) instanceof DeclParameterDeclList) || ((node
-						.getChildren().get(1).getChildren().get(1)
-						.getChildren().size() > 0) && (node.getChildren()
-						.get(1).getChildren().get(1).getChildren().get(0) instanceof DeclParameterDeclList)))) {
-			this.functions.add(node);
-		}
+		this.functions.add(node);
+		/*this.totalFunctions++;
+		if (node.getChildren().size() > 1) {
+			if (node.getChildren().get(0) instanceof StaticSpecifier) { //static function
+				if (node.getChildren().size() > 2) {
+					if (node.getChildren().get(2).getChildren().size() > 1) {
+						if ((node.getChildren().get(2).getChildren().get(1) instanceof DeclParameterDeclList) || ((node
+								.getChildren().get(2).getChildren().get(1)
+								.getChildren().size() > 0) && (node.getChildren()
+								.get(2).getChildren().get(1).getChildren().get(0) instanceof DeclParameterDeclList))) {
+							this.functions.add(node);
+						}
+					}
+				}
+			} else if (node.getChildren().get(1) instanceof AtomicNamedDeclarator) { // non-static function
+				if (node.getChildren().get(1).getChildren().size() > 1) {
+					if ((node.getChildren().get(1).getChildren().get(1) instanceof DeclParameterDeclList) || ((node
+							.getChildren().get(1).getChildren().get(1)
+							.getChildren().size() > 0) && (node.getChildren()
+							.get(1).getChildren().get(1).getChildren().get(0) instanceof DeclParameterDeclList))) {
+						this.functions.add(node);
+					}
+				}
+			}
+		}*/
 		for (int i = 0; i < node.getChildren().size(); i++) {
 			node.getChildren().get(i).accept(this);
 		}

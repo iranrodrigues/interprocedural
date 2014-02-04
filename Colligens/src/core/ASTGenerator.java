@@ -78,17 +78,21 @@ public class ASTGenerator {
 
 	// This method receives the translation units from TypeChef and my Translation Unit (tree.TranslationUnit).
 	public void generate(Product node, Node parent){
-		for (int i = 0; i < node.productArity(); i++){
-			if (node.productElement(i) instanceof Product){
-				Node myNode = this.getNode( (Product) node.productElement(i));
-				if (myNode != null && parent != null){
-					myNode.setParent(parent);
-					parent.addChild(myNode);
-					this.generate( (Product) node.productElement(i), myNode);
-				} else {
-					this.generate( (Product) node.productElement(i), parent);
-				}		
-			} 
+		try {
+			for (int i = 0; i < node.productArity(); i++){
+				if (node.productElement(i) instanceof Product){
+					Node myNode = this.getNode( (Product) node.productElement(i));
+					if (myNode != null && parent != null){
+						myNode.setParent(parent);
+						parent.addChild(myNode);
+						this.generate( (Product) node.productElement(i), myNode);
+					} else {
+						this.generate( (Product) node.productElement(i), parent);
+					}		
+				} 
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		
 	}

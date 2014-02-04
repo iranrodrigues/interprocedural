@@ -332,11 +332,11 @@ public class FindFunctionCallsVisitor implements Visitor {
 	@Override
 	public void run(FunctionCall node) {
 		if ((node.getParent().getChildren().get(0) instanceof Id)
-				&& (((Id) node.getParent().getChildren().get(0)).getName()
-						.equals(((Id) this.function.getChildren().get(1)
-								.getChildren().get(0)).getName()))) {
+			&& (((Id) node.getParent().getChildren().get(0)).getName()
+				.equals(new Function(this.function, null).getName()))) {
 			this.functionCalls.add(node);
 		}
+		
 		for (int i = 0; i < node.getChildren().size(); i++) {
 			node.getChildren().get(i).accept(this);
 		}
