@@ -19,8 +19,8 @@ public class TestInterJunit {
 		}
 
 		assertEquals(
-				"foo;1;0;1;1;0\n" + 
-				"bar;0;0;1;1;0",
+				"foo;1;0;1;1;0;true\n" + 
+				"bar;0;0;1;1;0;true",
 				m.testFunctions());
 	}
 	
@@ -50,8 +50,8 @@ public class TestInterJunit {
 		}
 
 		assertEquals(
-				"foo;1;0;0;0;1\n" + 
-				"bar;0;0;0;0;0",
+				"foo;1;0;0;0;1;true\n" + 
+				"bar;0;0;0;0;0;true",
 				m.testFunctions());
 	}
 	
@@ -80,8 +80,8 @@ public class TestInterJunit {
 		}
 
 		assertEquals(
-				"foo;1;1;1;2;1\n" + 
-				"bar;0;0;0;0;0",
+				"foo;1;1;1;2;1;true\n" + 
+				"bar;0;0;0;0;0;false",
 				m.testFunctions());
 	}
 	
@@ -111,8 +111,8 @@ public class TestInterJunit {
 		}
 
 		assertEquals(
-				"foo;0;0;0;0;0\n" + 
-				"bar;1;1;0;2;2",
+				"foo;0;0;0;0;0;true\n" + 
+				"bar;1;1;0;2;2;true",
 				m.testFunctions());
 	}
 	
@@ -142,8 +142,8 @@ public class TestInterJunit {
 		}
 
 		assertEquals(
-				"foo;0;0;0;0;0\n" + 
-				"bar;1;1;0;2;2",
+				"foo;0;0;0;0;0;true\n" + 
+				"bar;1;1;0;2;2;true",
 				m.testFunctions());
 	}
 	
@@ -173,8 +173,8 @@ public class TestInterJunit {
 		}
 
 		assertEquals(
-				"foo;1;1;0;4;1\n" + 
-				"bar;1;0;0;0;0",
+				"foo;1;1;0;4;1;true\n" + 
+				"bar;1;0;0;0;0;false",
 				m.testFunctions());
 	}
 	
@@ -206,8 +206,8 @@ public class TestInterJunit {
 		}
 
 		assertEquals(
-				"foo;1;1;0;2;1\n" + 
-				"bar;1;0;0;0;0",
+				"foo;1;1;0;2;1;true\n" + 
+				"bar;1;0;0;0;0;false",
 				m.testFunctions());
 	}
 	
@@ -222,7 +222,7 @@ public class TestInterJunit {
 
 		assertEquals( 
 				"Mandatory<->Optional;FunctionCallDependency;def(A);True;def(A);foo;x;false;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test7.c;11:4;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test7.c;3:7\n" + 
-				"Mandatory<->Optional;FunctionCallDependency;(!def(A)&def(B));True;(!def(A)&def(B));foo;x;false;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test7.c;11:4;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test7.c;5:7\n",
+				"Mandatory<->Optional;FunctionCallDependency;(!def(A)&def(B));True;(!def(A)&def(B));foo;x;false;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test7.c;11:4;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test7.c;5:7",
 				m.testDependencies());
 	}
 	
@@ -237,18 +237,18 @@ public class TestInterJunit {
 		}
 
 		assertEquals(
-				"function11;0;0;0;0;0\n" + 
-				"function12;0;0;0;0;0\n" + 
-				"function8;0;0;0;0;0\n" + 
-				"function9;0;0;0;0;0\n" + 
-				"function7;0;0;0;0;0\n" + 
-				"function6;1;0;0;0;0\n" + 
-				"function5;1;0;0;0;0\n" + 
-				"function4;1;0;0;0;0\n" + 
-				"function3;1;0;0;0;0\n" + 
-				"function2;0;0;0;0;0\n" + 
-				"function1;0;0;0;0;0\n" + 
-				"function10;1;0;0;0;0",
+				"function11;0;0;0;0;0;false\n" + 
+				"function12;0;0;0;0;0;false\n" + 
+				"function8;0;0;0;0;0;true\n" + 
+				"function9;0;0;0;0;0;true\n" + 
+				"function7;0;0;0;0;0;false\n" + 
+				"function6;1;0;0;0;0;false\n" + 
+				"function5;1;0;0;0;0;false\n" + 
+				"function4;1;0;0;0;0;false\n" + 
+				"function3;1;0;0;0;0;false\n" + 
+				"function2;0;0;0;0;0;false\n" + 
+				"function1;0;0;0;0;0;false\n" + 
+				"function10;1;0;0;0;0;true",
 				m.testFunctions());
 	}
 	
@@ -277,7 +277,7 @@ public class TestInterJunit {
 		}
 
 		assertEquals(
-				"foo;0;0;0;0;0",
+				"foo;0;0;0;0;0;true",
 				m.testFunctions());
 	}
 	
@@ -296,7 +296,6 @@ public class TestInterJunit {
 	}
 	
 	// Pointers
-	
 	@Test
 	public void test10a() {
 		TestInterProcedural m = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test10.c");
@@ -307,7 +306,7 @@ public class TestInterJunit {
 		}
 
 		assertEquals(
-				"foo;0;0;2;2;0",
+				"foo;0;0;2;2;0;true",
 				m.testFunctions());
 	}
 	
@@ -337,8 +336,8 @@ public class TestInterJunit {
 		}
 
 		assertEquals(
-				"foo;1;0;1;1;0\n" + 
-				"bar;1;0;0;0;0",
+				"foo;1;0;1;1;0;true\n" + 
+				"bar;1;0;0;0;0;true",
 				m.testFunctions());
 	}
 	
@@ -367,8 +366,8 @@ public class TestInterJunit {
 		}
 
 		assertEquals(
-				"foo;1;1;0;1;1\n" + 
-				"bar;1;1;0;1;1",
+				"foo;1;1;0;1;1;true\n" + 
+				"bar;1;1;0;1;1;true",
 				m.testFunctions());
 	}
 	
@@ -384,6 +383,154 @@ public class TestInterJunit {
 		assertEquals(
 				"Mandatory<->Optional;FunctionCallDependency;(!def(B)&def(D)&def(A)&!def(C));True;(!def(B)&def(D));foo;x;false;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test12.c;32:4;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test12.c;14:8\n" + 
 				"Mandatory<->Optional;FunctionCallDependency;(!def(B)&def(D)&!def(C));True;(!def(B)&def(D));bar;x;false;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test12.c;17:4;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test12.c;29:8",
+				m.testDependencies());
+	}
+	
+	// Struct with part of its code inside a directive
+	@Test
+	public void test13a() {
+		TestInterProcedural m = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test13.c");
+		try {
+			m.refactorCode();
+		} catch (OptionException e) {
+			e.printStackTrace();
+		}
+
+		assertEquals(
+				"foo;0;0;1;1;0;false",
+				m.testFunctions());
+	}
+	
+	@Test
+	public void test13b() {
+		TestInterProcedural m = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test13.c");
+		try {
+			m.refactorCode();
+		} catch (OptionException e) {
+			e.printStackTrace();
+		}
+
+		assertEquals(
+				"Optional<->Mandatory;GlobalVariableDependency;def(A);def(A);True;foo;x;true;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test13.c;3:5;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test13.c;10:3",
+				m.testDependencies());
+	}
+	
+	// Same as test9, but with typedef on struct
+	@Test
+	public void test14a() {
+		TestInterProcedural m = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test14.c");
+		try {
+			m.refactorCode();
+		} catch (OptionException e) {
+			e.printStackTrace();
+		}
+
+		assertEquals(
+				"foo;0;0;0;0;0;true",
+				m.testFunctions());
+	}
+	
+	@Test
+	public void test14b() {
+		TestInterProcedural m = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test14.c");
+		try {
+			m.refactorCode();
+		} catch (OptionException e) {
+			e.printStackTrace();
+		}
+
+		assertEquals(
+				"",
+				m.testDependencies());
+	}
+	
+	// Same as test9, but the struct is also global
+	@Test
+	public void test15a() {
+		TestInterProcedural m = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test15.c");
+		try {
+			m.refactorCode();
+		} catch (OptionException e) {
+			e.printStackTrace();
+		}
+
+		assertEquals(
+				"foo;0;0;1;1;0;true",
+				m.testFunctions());
+	}
+	
+	@Test
+	public void test15b() {
+		TestInterProcedural m = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test15.c");
+		try {
+			m.refactorCode();
+		} catch (OptionException e) {
+			e.printStackTrace();
+		}
+
+		assertEquals(
+				"Mandatory<->Optional;GlobalVariableDependency;def(A);True;def(A);foo;a;false;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test15.c;7:18;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test15.c;11:1",
+				m.testDependencies());
+	}
+	
+	// Pointer modifying another variable content
+	@Test
+	public void test16a() {
+		TestInterProcedural m = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test16.c");
+		try {
+			m.refactorCode();
+		} catch (OptionException e) {
+			e.printStackTrace();
+		}
+
+		assertEquals(
+				"foo;0;0;1;1;0;true",
+				m.testFunctions());
+	}
+	
+	@Test
+	public void test16b() {
+		TestInterProcedural m = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test16.c");
+		try {
+			m.refactorCode();
+		} catch (OptionException e) {
+			e.printStackTrace();
+		}
+
+		assertEquals(
+				"Mandatory<->Optional;GlobalVariableDependency;def(A);True;def(A);foo;a;false;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test15.c;7:18;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test15.c;11:1",
+				m.testDependencies());
+	}
+	
+	// Old C parameter declaration
+	@Test
+	public void test17a() {
+		TestInterProcedural m = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test17.c");
+		try {
+			m.refactorCode();
+		} catch (OptionException e) {
+			e.printStackTrace();
+		}
+
+		assertEquals(
+				"foobar;1;1;0;1;1;true\n" + 
+				"foo;0;0;0;0;0;false\n" + 
+				"bar;2;1;0;1;1;true", 
+				m.testFunctions());
+	}
+	
+	@Test
+	public void test17b() {
+		TestInterProcedural m = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test17.c");
+		try {
+			m.refactorCode();
+		} catch (OptionException e) {
+			e.printStackTrace();
+		}
+
+		assertEquals(
+				"Mandatory<->Optional;FunctionCallDependency;def(A);True;def(A);foobar;x;false;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test17.c;4:7;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test17.c;18:6\n" + 
+				"Mandatory<->Optional;FunctionCallDependency;def(A);True;def(A);bar;x;false;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test17.c;3:4;C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test17.c;12:6",
 				m.testDependencies());
 	}
 

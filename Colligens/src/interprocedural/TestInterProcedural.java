@@ -14,6 +14,7 @@ import tree.CompoundStatement;
 import tree.FunctionCall;
 import tree.FunctionDef;
 import tree.Id;
+import tree.Opt;
 import tree.TranslationUnit;
 import tree.visitor.VisitorASTOrganizer;
 import core.ASTGenerator;
@@ -71,7 +72,7 @@ public class TestInterProcedural {
 	}
 
 	public static void main(String[] args) {
-		TestInterProcedural testInterProcedural = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test3.c");
+		TestInterProcedural testInterProcedural = new TestInterProcedural("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\test7.c");
 		try {
 			testInterProcedural.refactorCode();
 			System.out.println(testInterProcedural.testFunctions());
@@ -117,12 +118,16 @@ public class TestInterProcedural {
 		FindFunctionsVisitor findFunctionsVisitor = new FindFunctionsVisitor();
 		myAst.accept(findFunctionsVisitor);
 		
-		Set<FunctionDef> functionDefs = findFunctionsVisitor.getFunctions();
+		List<FunctionDef> functionDefs = findFunctionsVisitor.getFunctions();
 		for (FunctionDef functionDef : functionDefs) {
+			FindFunctionDirectivesVisitor findFunctionDirectivesVisitor = new FindFunctionDirectivesVisitor();
+			functionDef.accept(findFunctionDirectivesVisitor);
+			Set<Opt> functionDirectives = findFunctionDirectivesVisitor.getFunctionDirectives();			
 			FindFunctionParametersVisitor findFunctionParametersVisitor = new FindFunctionParametersVisitor();
 			functionDef.accept(findFunctionParametersVisitor);
 			Set<Id> functionParameters = findFunctionParametersVisitor.getFunctionParameters();
 			Function function = new Function(functionDef, functionParameters);
+			function.setDirectives(functionDirectives);
 			functions.put(functionDef, function);
 			FunctionMetrics functionMetrics = new FunctionMetrics(function);
 			functionMetricsMap.put(function.getName(), functionMetrics);
@@ -242,7 +247,11 @@ public class TestInterProcedural {
 					}
 				}
 			}
-		}		
+		}
+		parser = null;
+		in = null;
+		myAst = null;
+		ast = null;
 		return "";
 	}
 	

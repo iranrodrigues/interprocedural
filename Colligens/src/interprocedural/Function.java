@@ -7,12 +7,14 @@ import tree.AtomicNamedDeclarator;
 import tree.FunctionCall;
 import tree.FunctionDef;
 import tree.Id;
+import tree.Opt;
 
 public class Function {
 	private FunctionDef functionDef;
 	private String name;
 	private Set<Id> parameters;
 	private List<FunctionCall> functionCalls;
+	private Set<Opt> directives;
 	
 	public Function(FunctionDef functionDef, Set<Id> parameters) {
 		this.functionDef = functionDef;
@@ -47,5 +49,13 @@ public class Function {
 	
 	public void setFunctionCalls(List<FunctionCall> functionCalls) {
 		this.functionCalls = functionCalls;
+	}
+	
+	public Set<Opt> getDirectives() {
+		return directives;
+	} 
+	
+	public void setDirectives(Set<Opt> directives) {
+		this.directives = directives;
 	}
 }

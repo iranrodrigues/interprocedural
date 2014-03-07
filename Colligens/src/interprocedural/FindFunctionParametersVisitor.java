@@ -122,6 +122,15 @@ public class FindFunctionParametersVisitor implements Visitor {
 
 	@Override
 	public void run(DeclIdentifierList node) {
+		if (node.getChildren().size() > 0) {
+			// Search for first Id under node
+			for (int i = 0; i < node.getChildren().size(); i++) {
+				if (node.getChildren().get(i) instanceof Id) {
+					this.functionParameters.add((Id) node.getChildren().get(i));
+				}				
+			}
+		}
+		
 		for (int i = 0; i < node.getChildren().size(); i++) {
 			node.getChildren().get(i).accept(this);
 		}

@@ -267,6 +267,7 @@ public class FindVariableDeclarationVisitor implements Visitor {
 	@Override
 	public void run(InitDeclaratorI node) {
 		if ((node.getChildren().size() > 0)
+				&& (!(node.getParent().getParent() instanceof FunctionDef))
 				&& (node.getChildren().get(0).getChildren().size() > 0)
 				&& (node.getChildren().get(0).getChildren().get(0) instanceof Id)
 				&& (((Id) node.getChildren().get(0).getChildren().get(0)).getName().equals(this.getVariable().getName()))

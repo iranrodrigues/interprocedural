@@ -1,11 +1,13 @@
 package interprocedural;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class FunctionMetrics {
 	private Function function;
-	private Set<Dependency> dependencies = new HashSet<Dependency>();
+	private List<Dependency> dependencies = new ArrayList<Dependency>();
 	
 	public FunctionMetrics(Function function) {
 		this.function = function;
@@ -15,7 +17,7 @@ public class FunctionMetrics {
 		return function;
 	}
 	
-	public Set<Dependency> getDependencies() {
+	public List<Dependency> getDependencies() {
 		return dependencies;
 	}
 	
@@ -46,7 +48,8 @@ public class FunctionMetrics {
 			getDependentParameters().size() + ";" +
 			getDependentGlobalVariables().size() + ";" +
 			getDependencies().size() + ";" +
-			getFunction().getFunctionCalls().size();
+			getFunction().getFunctionCalls().size() + ";" +
+			(getFunction().getDirectives().size() > 0);
 	}
 	
 }

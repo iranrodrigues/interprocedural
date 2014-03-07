@@ -1,7 +1,7 @@
 package interprocedural;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import tree.ArrayAccess;
 import tree.AssignExpr;
@@ -83,9 +83,9 @@ import tree.visitor.Visitor;
 
 public class FindFunctionsVisitor implements Visitor {
 
-	private Set<FunctionDef> functions = new HashSet<FunctionDef>();
+	private List<FunctionDef> functions = new ArrayList<FunctionDef>();
 
-	public Set<FunctionDef> getFunctions() {
+	public List<FunctionDef> getFunctions() {
 		return functions;
 	}
 
