@@ -39,7 +39,7 @@ public class ProjectAnalyzer {
 		Spreadsheet m;
 		
 		projectAnalyzer = new ProjectAnalyzer("interprocedural\\libssh0.5.3\\include\\stubs.h");
-		projectAnalyzer.getFiles(new File("interprocedural\\libssh0.5.3\\analysis\\src\\"));
+		projectAnalyzer.getFiles(new File("interprocedural\\libssh0.5.3\\analysis\\src\\dh.c"));
 		m = new Spreadsheet(projectAnalyzer);
 		m.createSpreadsheet("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\spreadsheets\\libssh.xls");
 		
