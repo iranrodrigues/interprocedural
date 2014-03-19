@@ -1,5 +1,6 @@
 package interprocedural.core;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import tree.AtomicNamedDeclarator;
@@ -12,7 +13,7 @@ public class Function {
 	private FunctionDef functionDef;
 	private String name;
 	private List<Id> parameters;
-	private List<FunctionCall> functionCalls;
+	private List<FunctionCall> functionCalls = new ArrayList<FunctionCall>();
 	private List<Opt> directives;
 	
 	public Function(FunctionDef functionDef/*, List<Id> parameters*/) {

@@ -1,12 +1,15 @@
 package interprocedural.core;
 
+import interprocedural.visitor.FindFunctionCallsVisitor;
 import interprocedural.visitor.FindFunctionsVisitor;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import tree.FunctionCall;
 import tree.FunctionDef;
+import tree.Id;
 import tree.Node;
 import tree.TranslationUnit;
 import tree.visitor.VisitorASTOrganizer;
@@ -42,13 +45,16 @@ public class ProjectScanner {
 	public static void main(String[] args) {
 		ProjectScanner projectScanner;
 		//Spreadsheet m;
-		
-		projectScanner = new ProjectScanner("interprocedural\\libssh0.5.3\\include\\stubs.h");
-		projectScanner.getFile(new File("interprocedural\\libssh0.5.3\\analysis\\src\\"));
+		projectScanner = new ProjectScanner("interprocedural\\gzip1.2.4\\include\\stubs.h");
+		projectScanner.getFile(new File("interprocedural\\gzip1.2.4\\analysis\\"));
 		
 		for (Function function : projectScanner.getFunctions()) {
 			System.out.println(function.getName() + " - " + function.getFunctionDef().getPositionFrom());
+			for (FunctionCall functionCall : function.getFunctionCalls()) {
+				System.out.println("\t" + functionCall.getPositionFrom());
+			}
 		}
+		
 		//m = new Spreadsheet(projectScanner);
 		//m.createSpreadsheet("C:\\Users\\Iran\\Google Drive\\mestrado\\projeto\\interprocedural\\spreadsheets\\libssh.xls");
 		
@@ -174,6 +180,21 @@ public class ProjectScanner {
 				this.functions.add(function);
 			}
 		}
+		
+		FindFunctionCallsVisitor findFunctionCallsVisitor = new FindFunctionCallsVisitor();
+		myAst.accept(findFunctionCallsVisitor);
+		List<FunctionCall> functionCalls = findFunctionCallsVisitor.getFunctionCalls();
+		
+		for (FunctionCall functionCall : functionCalls) {
+			if (functionCall.getPositionFrom().getFile().endsWith(".c")) {
+				for (Function function : this.functions) {
+					if (function.getName().equals(((Id) functionCall.getParent().getChildren().get(0)).getName())) {
+						function.getFunctionCalls().add(functionCall);
+					}
+				}
+			}
+		}
+		
 	}
 
 }
